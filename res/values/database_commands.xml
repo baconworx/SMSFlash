@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="create_table_filtersets">
+        create table filtersets (
+        id integer primary key autoincrement,
+        name varchar(32)
+        );
+    </string>
+    <string name="create_table_filter">
+        create table filter (
+        id integer primary key autoincrement,
+        name varchar(32) not null,
+        caption varchar(128) not null,
+        pattern varchar(256) not null,
+        replacement varchar(256) not null,
+        color integer not null,
+        sourceNumber varchar(64) not null,
+        timeout integer not null,
+        filterset integer references filtersets
+        );
+    </string>
+</resources>
