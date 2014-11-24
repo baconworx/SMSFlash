@@ -2,6 +2,7 @@ package com.baconworx.smsflash.db;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.text.TextUtils;
 import com.baconworx.smsflash.classes.Trigger;
 
 public class Filter {
@@ -10,8 +11,8 @@ public class Filter {
     private static final int COL_PATTERN = 3;
     private static final int COL_REPLACEMENT = 4;
     private static final int COL_COLOR = 5;
-    private static final int COL_TIMEOUT = 6;
-    private static final int COL_SOURCENO = 7;
+    private static final int COL_SOURCENO = 6;
+    private static final int COL_TIMEOUT = 7;
     private static final int COL_FILTERSET = 8;
     private String name;
     private String caption;
@@ -30,7 +31,8 @@ public class Filter {
         filter.setColor(cursor.getInt(COL_COLOR));
         filter.setSourceNumber(cursor.getString(COL_SOURCENO));
         filter.setTimeout(cursor.getInt(COL_TIMEOUT));
-        filter.setFiltersetId(cursor.getInt(COL_FILTERSET));
+        int filtersetId = cursor.getInt(COL_FILTERSET);
+        filter.setFiltersetId(filtersetId == 0 ? null : filtersetId);
 
         return filter;
     }
@@ -45,7 +47,7 @@ public class Filter {
     public int getColor() { return color; }
     public void setColor(int color) { this.color = color; }
     public String getSourceNumber() { return sourceNumber; }
-    public void setSourceNumber(String sourceNumber) { this.sourceNumber = sourceNumber; }
+    public void setSourceNumber(String sourceNumber) { this.sourceNumber = TextUtils.isEmpty(sourceNumber) ? null : sourceNumber; }
     public int getTimeout() { return timeout; }
     public void setTimeout(int timeout) { this.timeout = timeout; }
     public Integer getFiltersetId() { return filtersetId; }

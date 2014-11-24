@@ -7,16 +7,13 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.util.SparseArray;
-import android.widget.Toast;
 
 public class ConfigDatabase {
     private SQLiteDatabase database;
     private DatabaseHelper dbHelper;
-    private Context context;
 
     /* if test set to true, will delete database and insert some test data */
     private boolean test = false;
-
 
     public ConfigDatabase(Context context) {
         this(context, false);
@@ -24,7 +21,6 @@ public class ConfigDatabase {
 
     public ConfigDatabase(Context context, boolean test) {
         dbHelper = new DatabaseHelper(context);
-        this.context = context;
         this.test = test;
     }
 
@@ -42,7 +38,8 @@ public class ConfigDatabase {
         values.put("pattern", filter.getPattern());
         values.put("replacement", filter.getReplacement());
         values.put("color", filter.getColor());
-        values.put("sourceNumber", filter.getTimeout());
+        values.put("timeout", filter.getTimeout());
+        values.put("sourceNumber", filter.getSourceNumber());
         values.put("filterset", filter.getFiltersetId());
 
         database.insert("filter", null, values);
@@ -66,12 +63,8 @@ public class ConfigDatabase {
         SparseArray<Filter> filters = new SparseArray<Filter>();
         Filter current;
         while (cursor.moveToNext()) {
-            try {
-                current = Filter.fromCursor(cursor);
-                filters.append(cursor.getInt(cursor.getColumnIndex("id")), current);
-            } catch (NullPointerException ex) {
-            }
-
+            current = Filter.fromCursor(cursor);
+            filters.append(cursor.getInt(cursor.getColumnIndex("id")), current);
         }
 
         return filters;
@@ -117,7 +110,6 @@ public class ConfigDatabase {
     }
 
     public void updateFilter(int filterId, Filter filter) {
-        Toast.makeText(context, Integer.toString(filterId), Toast.LENGTH_LONG).show();
         database.update("filter", filter.toContentValues(), "id = ?", new String[]{Integer.toString(filterId)});
     }
 }

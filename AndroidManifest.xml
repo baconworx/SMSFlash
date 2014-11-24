@@ -53,7 +53,7 @@
                 android:name="com.baconworx.smsflash.activities.Filters"
                 android:label="@string/title_activity_filters">
         </activity>
-        <activity android:name=".activities.EditFilter" android:label="Edit Filter"/>
+        <activity android:name="com.baconworx.smsflash.activities.EditFilter" android:label="Edit Filter"/>
     </application>
 
 </manifest>

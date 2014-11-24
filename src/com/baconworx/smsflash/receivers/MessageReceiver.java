@@ -5,9 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
+import android.util.SparseArray;
 import com.baconworx.smsflash.activities.FlashDisplay;
 import com.baconworx.smsflash.classes.DisplayMessageData;
 import com.baconworx.smsflash.classes.Trigger;
+import com.baconworx.smsflash.db.ConfigDatabase;
+import com.baconworx.smsflash.db.Filter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +22,20 @@ public class MessageReceiver extends BroadcastReceiver {
         super();
     }
     public static void SetTriggers(List<Trigger> triggers) { MessageReceiver.triggers = triggers; }
+    public static void SetTriggersFromDb(Context context) {
+        ConfigDatabase configDatabase = new ConfigDatabase(context);
+        configDatabase.open();
 
+        SparseArray<Filter> filters = configDatabase.getFilters();
+        List<Trigger> triggers = new ArrayList<Trigger>();
+
+        for (int i = 0; i < filters.size(); i++) {
+            triggers.add(filters.get(filters.keyAt(i)).makeTrigger());
+        }
+        SetTriggers(triggers);
+
+        configDatabase.close();
+    }
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle bundle = intent.getExtras();
@@ -31,21 +47,22 @@ public class MessageReceiver extends BroadcastReceiver {
         displayMessageIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         if (bundle != null) {
-            Object[] pdus = (Object[]) bundle.get("pdus");
+            byte[][] pdus = (byte[][]) bundle.get("pdus");
             String messageBody;
 
-            for (int i = 0; i < pdus.length; i++) {
-                msg = SmsMessage.createFromPdu((byte[]) pdus[i]);
+            for (byte[] pdu : pdus) {
+                msg = SmsMessage.createFromPdu(pdu);
                 msgBuilder.append(msg.getDisplayMessageBody());
             }
 
-            for (Trigger trigger : triggers) {
-                messageBody = msgBuilder.toString();
-                displayMessageData = trigger.match(
-                        msg.getDisplayOriginatingAddress(), messageBody);
+            if (msg != null) {
+                for (Trigger trigger : triggers) {
+                    messageBody = msgBuilder.toString();
+                    displayMessageData = trigger.match(msg.getDisplayOriginatingAddress(), messageBody);
 
-                if (displayMessageData != null)
-                    break;
+                    if (displayMessageData != null)
+                        break;
+                }
             }
 
             if (displayMessageData != null) {

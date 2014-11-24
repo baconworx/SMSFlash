@@ -8,15 +8,13 @@ import com.baconworx.smsflash.R;
 import com.baconworx.smsflash.db.ConfigDatabase;
 import com.baconworx.smsflash.db.Filter;
 
-/**
- * Created by eun on 23.11.2014.
- */
 public class EditFilter extends Activity {
     private final int DEFAULT_COLOR = Color.RED;
     private final int DEFAULT_TIMEOUT = 5000;
     Filter filter;
     private ConfigDatabase configDatabase;
     private int filterId;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +56,10 @@ public class EditFilter extends Activity {
         }
 
         configDatabase.close();
+
+        finish();
+        setResult(0);
+
         super.onBackPressed();
     }
 }

@@ -17,6 +17,11 @@
             android:text="Settings"/>
 
     <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Make Test Config"
+            android:id="@+id/testConfigButton" android:singleLine="true"/>
+    <Button
             android:id="@+id/filtersButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
