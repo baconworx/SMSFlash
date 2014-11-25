@@ -1,6 +1,8 @@
 package com.baconworx.smsflash.activities;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
@@ -58,14 +60,21 @@ public class FlashDisplay extends Activity {
             this.wait = millis;
         }
 
+        @Override
         public void onTick(long millisUntilFinished) {
             if (millisUntilFinished < wait) {
                 backgroundLayout.setAlpha(millisUntilFinished / (float) millis);
             }
         }
 
+        @Override
         public void onFinish() {
             FlashDisplay.this.finish();
+
+            Intent openSmsIntent = new Intent(Intent.ACTION_VIEW);
+            int threadId = getIntent().getExtras().getInt("threadId");
+            openSmsIntent.setData(Uri.parse("content://mms-sms/conversations/" + threadId));
+            FlashDisplay.this.startActivity(openSmsIntent);
         }
     }
 }

@@ -23,7 +23,8 @@ public class EditFilter extends Activity {
         configDatabase = new ConfigDatabase(this);
         configDatabase.open();
 
-        filterId = getIntent().getExtras().getInt("filterId", -1);
+        Bundle extras = getIntent().getExtras();
+        filterId = extras != null ? extras.getInt("filterId", -1) : -1;
 
         if (filterId > -1) {
 

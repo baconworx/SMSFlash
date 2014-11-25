@@ -1,8 +1,11 @@
 package com.baconworx.smsflash.receivers;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.SparseArray;
@@ -44,18 +47,38 @@ public class MessageReceiver extends BroadcastReceiver {
         StringBuilder msgBuilder = new StringBuilder();
 
         Intent displayMessageIntent = new Intent(context, FlashDisplay.class);
-        displayMessageIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        displayMessageIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
 
         if (bundle != null) {
-            byte[][] pdus = (byte[][]) bundle.get("pdus");
+            Object[] pdus = (Object[]) bundle.get("pdus");
             String messageBody;
 
-            for (byte[] pdu : pdus) {
-                msg = SmsMessage.createFromPdu(pdu);
-                msgBuilder.append(msg.getDisplayMessageBody());
+            for (int i = 0, pdusLength = pdus.length; i < pdusLength; i++) {
+                byte[] pdu = (byte[]) pdus[i];
+                try {
+                    msg = SmsMessage.createFromPdu(pdu);
+                    msgBuilder.append(msg.getDisplayMessageBody());
+                } catch (Exception ex) {
+                    // msg unparsable, skip
+                }
             }
 
+            int threadId = 0;
             if (msg != null) {
+                /* find SMS id */
+                ContentResolver contentResolver = context.getContentResolver();
+                final String[] projection = new String[]{"thread_id"};
+                Uri uri = Uri.parse("content://sms");
+                Cursor query = contentResolver.query(
+                        uri,
+                        projection,
+                        "address=?",
+                        new String[]{msg.getOriginatingAddress()},
+                        null);
+
+                query.moveToNext();
+                threadId = query.getInt(0);
+
                 for (Trigger trigger : triggers) {
                     messageBody = msgBuilder.toString();
                     displayMessageData = trigger.match(msg.getDisplayOriginatingAddress(), messageBody);
@@ -74,6 +97,8 @@ public class MessageReceiver extends BroadcastReceiver {
                         displayMessageData.getBackgroundColor());
                 displayMessageIntent.putExtra("timeout",
                         displayMessageData.getTimeout());
+                displayMessageIntent.putExtra("threadId",
+                        threadId);
                 context.startActivity(displayMessageIntent);
             }
         }

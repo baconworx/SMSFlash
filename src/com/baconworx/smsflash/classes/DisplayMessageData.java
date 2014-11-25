@@ -6,10 +6,6 @@ public class DisplayMessageData {
     private String displayText;
     private int timeout;
 
-    public DisplayMessageData() {
-
-    }
-
     public DisplayMessageData(String caption, int backgroundColor, String displayText, int timeout) {
         this.caption = caption;
         this.backgroundColor = backgroundColor;
@@ -19,9 +15,7 @@ public class DisplayMessageData {
     public String getCaption() {
         return caption;
     }
-    public void setCaption(String caption) {
-        this.caption = caption;
-    }
+    public void setCaption(String caption) { this.caption = caption; }
     public int getBackgroundColor() {
         return backgroundColor;
     }
@@ -31,13 +25,7 @@ public class DisplayMessageData {
     public String getDisplayText() {
         return displayText;
     }
-    public void setDisplayText(String displayText) {
-        this.displayText = displayText;
-    }
-    public int getTimeout() {
-        return timeout;
-    }
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
+    public void setDisplayText(String displayText) { this.displayText = displayText; }
+    public int getTimeout() { return timeout; }
+    public void setTimeout(int timeout) { this.timeout = timeout; }
 }

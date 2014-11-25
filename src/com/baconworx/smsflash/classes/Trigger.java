@@ -12,26 +12,31 @@ public class Trigger {
     private String caption;
     private String sourceNumber;
     private int timeout;
+    private boolean caseSensitive = false;
 
-    public Trigger() {
-
-    }
+    public Trigger() { }
 
     public Trigger(String regex, String replacement, String caption,
                    int backgroundColor, String sourceNumber) {
-        this.pattern = Pattern.compile(regex);
+        if (caseSensitive) this.pattern = Pattern.compile(regex);
+        else this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+
         this.replacement = replacement;
         this.caption = caption;
         this.backgroundColor = backgroundColor;
         this.sourceNumber = sourceNumber;
         this.timeout = 0;
     }
+    public void setCaseSensitive(boolean caseSensitive) { this.caseSensitive = caseSensitive; }
     public String getRegex() {
         return pattern.pattern();
     }
+
     public void setRegex(String regex) {
-        this.pattern = Pattern.compile(regex);
+        if (caseSensitive) this.pattern = Pattern.compile(regex);
+        else this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     }
+
     public String getReplacement() {
         return replacement;
     }
@@ -53,9 +58,7 @@ public class Trigger {
     public int getTimeout() {
         return timeout;
     }
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
+    public void setTimeout(int timeout) { this.timeout = timeout; }
     public String getSourceNumber() {
         return sourceNumber;
     }
@@ -66,14 +69,9 @@ public class Trigger {
         DisplayMessageData displayMessageData = null;
 
         Matcher matcher = pattern.matcher(message);
-        if (matcher.matches()
-                && (this.sourceNumber == null || PhoneNumberUtils.compare(
-                this.sourceNumber, sourceNumber))) {
-            String displayText = pattern.matcher(message).replaceAll(
-                    replacement);
-
-            displayMessageData = new DisplayMessageData(caption,
-                    backgroundColor, displayText, timeout);
+        if (matcher.find() && (this.sourceNumber == null || PhoneNumberUtils.compare(this.sourceNumber, sourceNumber))) {
+            String displayText = matcher.replaceAll(replacement);
+            displayMessageData = new DisplayMessageData(caption, backgroundColor, displayText, timeout);
         }
         return displayMessageData;
     }

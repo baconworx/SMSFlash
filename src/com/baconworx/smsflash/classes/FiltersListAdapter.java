@@ -2,11 +2,13 @@ package com.baconworx.smsflash.classes;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.baconworx.smsflash.R;
 
@@ -34,8 +36,10 @@ public class FiltersListAdapter extends ArrayAdapter<FiltersListItem> {
             viewHolder.textView = (TextView) convertView.findViewById(R.id.label);
             viewHolder.imageView = (ImageView) convertView.findViewById(R.id.icon);
             viewHolder.id = values.get(position).getId();
+            viewHolder.layout = (LinearLayout) convertView.findViewById(R.id.filterRow);
 
             convertView.setTag(viewHolder);
+            convertView.setId(viewHolder.id);
         } else {
             viewHolder = (ViewHolderItem) convertView.getTag();
         }
@@ -48,13 +52,25 @@ public class FiltersListAdapter extends ArrayAdapter<FiltersListItem> {
             viewHolder.imageView.setVisibility(View.INVISIBLE);
         }
 
+        if (values.get(position).isSelected()) {
+            viewHolder.layout.setBackgroundColor(Color.GRAY);
+        } else {
+            viewHolder.layout.setBackgroundColor(Color.TRANSPARENT);
+        }
+
+
         return convertView;
+    }
+    public void clearSelection() {
+        for (FiltersListItem item : values) item.setSelected(false);
+        notifyDataSetChanged();
     }
 
     public static class ViewHolderItem {
         ImageView imageView;
         int id;
         private TextView textView;
+        private LinearLayout layout;
         public TextView getTextView() {
             return textView;
         }
@@ -73,5 +89,7 @@ public class FiltersListAdapter extends ArrayAdapter<FiltersListItem> {
         public void setId(int id) {
             this.id = id;
         }
+        public View getLayout() { return layout; }
+        public void setLayout(LinearLayout layout) { this.layout = layout; }
     }
 }

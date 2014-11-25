@@ -6,6 +6,7 @@ public class FiltersListItem {
     private int id;
     private boolean isGroup;
     private String text;
+    private boolean selected;
 
     public FiltersListItem(int id, String text, boolean isGroup) {
         this.id = id;
@@ -34,4 +35,7 @@ public class FiltersListItem {
     public void setId(int id) {
         this.id = id;
     }
+    public boolean isSelected() { return selected; }
+    public void setSelected(boolean selected) { this.selected = selected; }
+    public void setSelected() { this.selected = !this.selected; }
 }

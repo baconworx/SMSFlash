@@ -112,4 +112,7 @@ public class ConfigDatabase {
     public void updateFilter(int filterId, Filter filter) {
         database.update("filter", filter.toContentValues(), "id = ?", new String[]{Integer.toString(filterId)});
     }
+    public void deleteFilter(Integer selectedFilterId) {
+        database.delete("filter", "id = ?", new String[]{selectedFilterId.toString()});
+    }
 }
