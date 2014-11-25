@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import com.baconworx.smsflash.classes.Trigger;
 
 public class Filter {
+    private static final int COL_ID = 0;
     private static final int COL_NAME = 1;
     private static final int COL_CAPTION = 2;
     private static final int COL_PATTERN = 3;
@@ -14,6 +15,7 @@ public class Filter {
     private static final int COL_SOURCENO = 6;
     private static final int COL_TIMEOUT = 7;
     private static final int COL_FILTERSET = 8;
+    private int id;
     private String name;
     private String caption;
     private String pattern;
@@ -22,20 +24,26 @@ public class Filter {
     private String sourceNumber;
     private int timeout;
     private Integer filtersetId;
+
     public static Filter fromCursor(Cursor cursor) {
         Filter filter = new Filter();
-        filter.setName(cursor.getString(COL_NAME));
-        filter.setCaption(cursor.getString(COL_CAPTION));
-        filter.setPattern(cursor.getString(COL_PATTERN));
-        filter.setReplacement(cursor.getString(COL_REPLACEMENT));
-        filter.setColor(cursor.getInt(COL_COLOR));
-        filter.setSourceNumber(cursor.getString(COL_SOURCENO));
-        filter.setTimeout(cursor.getInt(COL_TIMEOUT));
-        int filtersetId = cursor.getInt(COL_FILTERSET);
-        filter.setFiltersetId(filtersetId == 0 ? null : filtersetId);
+        filter.id = cursor.getInt(COL_ID);
+        filter.name = cursor.getString(COL_NAME);
+        filter.caption = cursor.getString(COL_CAPTION);
+        filter.pattern = cursor.getString(COL_PATTERN);
+        filter.replacement = cursor.getString(COL_REPLACEMENT);
+        filter.color = cursor.getInt(COL_COLOR);
+        filter.sourceNumber = cursor.getString(COL_SOURCENO);
+        filter.timeout = cursor.getInt(COL_TIMEOUT);
+
+        filter.filtersetId = cursor.getInt(COL_FILTERSET);
+        filter.filtersetId = (filter.filtersetId == 0 ? null : filter.filtersetId);
 
         return filter;
     }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getCaption() { return caption; }

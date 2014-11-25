@@ -1,6 +1,5 @@
 package com.baconworx.smsflash.db;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -31,18 +30,13 @@ public class ConfigDatabase {
     }
 
     public void addFilter(Filter filter) {
-        ContentValues values = new ContentValues();
+        int newFilterId = (int) database.insert("filter", null, filter.toContentValues());
+        filter.setId(newFilterId);
+    }
 
-        values.put("name", filter.getName());
-        values.put("caption", filter.getCaption());
-        values.put("pattern", filter.getPattern());
-        values.put("replacement", filter.getReplacement());
-        values.put("color", filter.getColor());
-        values.put("timeout", filter.getTimeout());
-        values.put("sourceNumber", filter.getSourceNumber());
-        values.put("filterset", filter.getFiltersetId());
-
-        database.insert("filter", null, values);
+    public void addFilterset(Filterset filterset) {
+        int newFilterIdset = (int) database.insert("filterset", null, filterset.toContentValues());
+        filterset.setId(newFilterIdset);
     }
 
     public SparseArray<Filter> getFilters() {
@@ -70,32 +64,60 @@ public class ConfigDatabase {
         return filters;
     }
 
+    public SparseArray<Filterset> getFiltersets() {
+        Cursor cursor;
+        cursor = database.rawQuery("select * from filterset", null);
+
+        SparseArray<Filterset> filtersets = new SparseArray<Filterset>();
+        Filterset current;
+        while (cursor.moveToNext()) {
+            current = Filterset.fromCursor(cursor);
+            filtersets.append(cursor.getInt(cursor.getColumnIndex("id")), current);
+        }
+
+        return filtersets;
+    }
+
     public void close() {
         dbHelper.close();
     }
 
     private void setupTest() {
         database.delete("filter", null, null);
+        database.delete("filterset", null, null);
 
-        Filter filter;
+        Filter filterErste;
 
-        filter = new Filter();
-        filter.setCaption("TAC-SMS");
-        filter.setPattern("^.*TAC:\\s([0-9]{4})$");
-        filter.setReplacement("$1");
-        filter.setName("Erste Bank");
-        filter.setColor(Color.CYAN);
-        filter.setTimeout(5000);
-        addFilter(filter);
+        filterErste = new Filter();
+        filterErste.setCaption("TAC-SMS");
+        filterErste.setPattern("^.*TAC:\\s([0-9]{4})$");
+        filterErste.setReplacement("$1");
+        filterErste.setName("Erste Bank");
+        filterErste.setColor(Color.CYAN);
+        filterErste.setTimeout(5000);
 
-        filter = new Filter();
-        filter.setCaption("smsTAN");
-        filter.setPattern("^.*smsTAN\\s(?:is|lautet)\\s([a-z0-9]{7})\\s.*$");
-        filter.setReplacement("$1");
-        filter.setName("Raika");
-        filter.setColor(Color.CYAN);
-        filter.setTimeout(5000);
-        addFilter(filter);
+        Filter filterRaika;
+
+        filterRaika = new Filter();
+        filterRaika.setCaption("smsTAN");
+        filterRaika.setPattern("^.*smsTAN\\s(?:is|lautet)\\s([a-z0-9]{7})\\s.*$");
+        filterRaika.setReplacement("$1");
+        filterRaika.setName("Raika");
+        filterRaika.setColor(Color.CYAN);
+        filterRaika.setTimeout(5000);
+
+        Filterset filterset = new Filterset("Banken");
+        addFilterset(filterset);
+
+        filterErste.setFiltersetId(filterset.getId());
+        addFilter(filterErste);
+        filterRaika.setFiltersetId(filterset.getId());
+        addFilter(filterRaika);
+
+        filterErste.setFiltersetId(null);
+        addFilter(filterErste);
+        filterRaika.setFiltersetId(null);
+        addFilter(filterRaika);
     }
 
     public Filter getFilter(Integer filterId) {
@@ -112,7 +134,18 @@ public class ConfigDatabase {
     public void updateFilter(int filterId, Filter filter) {
         database.update("filter", filter.toContentValues(), "id = ?", new String[]{Integer.toString(filterId)});
     }
-    public void deleteFilter(Integer selectedFilterId) {
-        database.delete("filter", "id = ?", new String[]{selectedFilterId.toString()});
+    public void deleteFilter(int selectedFilterId) {
+        database.delete("filter", "id = ?", new String[]{Integer.toString(selectedFilterId)});
+    }
+    public void deleteFilterset(Integer selectedFiltersetId) {
+        if (selectedFiltersetId != null) {
+            // clean all containing filters
+            SparseArray<Filter> filters = getFilters(selectedFiltersetId);
+            for (int i = 0, filtersSize = filters.size(); i < filtersSize; i++)
+                deleteFilter(filters.get(filters.keyAt(i)).getId());
+
+            // delete filterset
+            database.delete("filterset", "id = ?", new String[]{selectedFiltersetId.toString()});
+        }
     }
 }

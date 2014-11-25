@@ -17,7 +17,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(context.getString(R.string.create_table_filtersets));
+        db.execSQL(context.getString(R.string.create_table_filterset));
         db.execSQL(context.getString(R.string.create_table_filter));
     }
 

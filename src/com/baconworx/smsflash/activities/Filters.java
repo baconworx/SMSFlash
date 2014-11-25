@@ -12,6 +12,7 @@ import com.baconworx.smsflash.classes.FiltersListAdapter;
 import com.baconworx.smsflash.classes.FiltersListItem;
 import com.baconworx.smsflash.db.ConfigDatabase;
 import com.baconworx.smsflash.db.Filter;
+import com.baconworx.smsflash.db.Filterset;
 import com.baconworx.smsflash.receivers.MessageReceiver;
 
 import java.util.ArrayList;
@@ -20,7 +21,8 @@ import java.util.List;
 public class Filters extends Activity {
     private static final int EDIT_FILTER_REQUEST = 0;
     List<FiltersListItem> listItems = new ArrayList<FiltersListItem>();
-    private ArrayList<Integer> selectedItems = null;
+    private ArrayList<Integer> selectedFilters = null;
+    private ArrayList<Integer> selectedFiltersets = null;
 
     private ActionMode.Callback mActionModeCallback;
 
@@ -40,23 +42,40 @@ public class Filters extends Activity {
         filtersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                if (selectedItems != null) {
-                    FiltersListItem clickedItem = adapter.getItem(position);
+                FiltersListItem clickedItem = adapter.getItem(position);
+
+                if (selectedFilters != null) {
                     clickedItem.setSelected();
-                    if (clickedItem.isSelected()) selectedItems.add(clickedItem.getId());
-                    else selectedItems.remove(selectedItems.indexOf(clickedItem.getId()));
+
+                    if (clickedItem.isSelected()) {
+                        if (clickedItem.isGroup())
+                            selectedFiltersets.add(clickedItem.getId());
+                        else
+                            selectedFilters.add(clickedItem.getId());
+                    } else {
+                        if (clickedItem.isGroup())
+                            selectedFiltersets.remove(selectedFiltersets.indexOf(clickedItem.getId()));
+                        else
+                            selectedFilters.remove(selectedFilters.indexOf(clickedItem.getId()));
+                    }
                     refreshList();
                 } else {
-                    Intent editFilterIntent = new Intent(Filters.this, EditFilter.class);
-                    int filterId = ((FiltersListAdapter.ViewHolderItem) view.getTag()).getId();
-                    editFilterIntent.putExtra("filterId", filterId);
-                    startActivityForResult(editFilterIntent, EDIT_FILTER_REQUEST);
+                    if (clickedItem.isGroup()) {
+                        Intent openFilterIntent = new Intent(Filters.this, Filters.class);
+                        int filtersetId = clickedItem.getId();
+                        openFilterIntent.putExtra("filterset", filtersetId);
+                        startActivity(openFilterIntent);
+                    } else {
+                        Intent editFilterIntent = new Intent(Filters.this, EditFilter.class);
+                        int filterId = clickedItem.getId();
+                        editFilterIntent.putExtra("filterId", filterId);
+                        startActivityForResult(editFilterIntent, EDIT_FILTER_REQUEST);
+                    }
                 }
             }
         });
 
         mActionModeCallback = new ActionMode.Callback() {
-
             // Called when the action mode is created; startActionMode() was called
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -78,17 +97,20 @@ public class Filters extends Activity {
                         ConfigDatabase configDatabase = new ConfigDatabase(Filters.this);
                         configDatabase.open();
 
-                        for (int selectedFilterId : selectedItems)
+                        for (int selectedFilterId : selectedFilters)
                             configDatabase.deleteFilter(selectedFilterId);
 
+                        for (int selectedFiltersetId : selectedFiltersets)
+                            configDatabase.deleteFilterset(selectedFiltersetId);
+
                         configDatabase.close();
-                        selectedItems = null;
+                        selectedFilters = null;
+                        selectedFiltersets = null;
 
                         updateList();
                         MessageReceiver.SetTriggersFromDb(Filters.this);
 
-                        mode.finish();
-                        return true;
+                        // no breakerino! pass on!! >>>>>>>>>>>>
                     default:
                         mode.finish();
                         return false;
@@ -98,31 +120,34 @@ public class Filters extends Activity {
             // Called when the user exits the action mode
             @Override
             public void onDestroyActionMode(ActionMode mode) {
-                selectedItems = null;
+                selectedFilters = null;
                 clearSelection();
             }
-        };
+        }
+        ;
 
         filtersListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                if (selectedItems != null) {
-                    return false;
+                if (selectedFilters != null) {
+                    return false; // our good boy onItemClick will handle this
                 }
 
-                selectedItems = new ArrayList<Integer>();
+                selectedFilters = new ArrayList<Integer>();
+                selectedFiltersets = new ArrayList<Integer>();
 
-                // Start the CAB using the ActionMode.Callback defined above
+                // start the CAB using the ActionMode.Callback defined above
                 FiltersListItem selectedFilter = (FiltersListItem) parent.getItemAtPosition(position);
                 if (selectedFilter != null) {
                     startActionMode(mActionModeCallback);
-                    return false; // pass to onClick for selection of long-clicked item
+                    return false; // pass to our friend onItemClick for selection of long-clicked item
                 }
 
                 return false;
             }
         });
     }
+
     private void clearSelection() {
         ListView filtersListView = (ListView) findViewById(R.id.filtersListView);
         ((FiltersListAdapter) filtersListView.getAdapter()).clearSelection();
@@ -146,19 +171,45 @@ public class Filters extends Activity {
     }
 
     private void updateList() {
+        // clear list
+        listItems.clear();
+
+
         ConfigDatabase configDatabase = new ConfigDatabase(this);
         configDatabase.open();
 
+        // if filterset was set for this intent, we only get those, otherwise all
+        Bundle extras = getIntent().getExtras();
+        Integer filtersetId = null;
+        if (extras != null) {
+            filtersetId = extras.getInt("filterset", -1);
+            filtersetId = filtersetId != -1 ? filtersetId : null;
+        }
+
         int key;
         Filter filter;
-        SparseArray<Filter> filters = configDatabase.getFilters(null);
 
-        listItems.clear();
+        // if we're at top view, we add the filtersets too
+        Filterset filterset;
+        if (filtersetId == null) {
+            SparseArray<Filterset> filtersets = configDatabase.getFiltersets();
+
+            for (int i = 0; i < filtersets.size(); i++) {
+                key = filtersets.keyAt(i);
+                filterset = filtersets.get(key);
+                listItems.add(FiltersListItem.fromFilterset(filterset));
+            }
+        }
+
+        // and add the filters (setless or for selected set)
+        SparseArray<Filter> filters = configDatabase.getFilters(filtersetId);
+
         for (int i = 0; i < filters.size(); i++) {
             key = filters.keyAt(i);
             filter = filters.get(key);
-            listItems.add(FiltersListItem.fromFilter(key, filter));
+            listItems.add(FiltersListItem.fromFilter(filter));
         }
+
 
         configDatabase.close();
 
@@ -178,6 +229,15 @@ public class Filters extends Activity {
         switch (id) {
             case R.id.action_new_filter:
                 Intent openEditFilterIntent = new Intent(this, EditFilter.class);
+
+                // set filterset for new filter, if set
+                Bundle extras = getIntent().getExtras();
+                if (extras != null) {
+                    int filtersetId = extras.getInt("filterset", -1);
+
+                    if (filtersetId != -1) openEditFilterIntent.putExtra("filterset", filtersetId);
+                }
+
                 startActivityForResult(openEditFilterIntent, 0);
                 break;
         }

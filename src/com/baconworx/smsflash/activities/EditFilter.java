@@ -50,6 +50,14 @@ public class EditFilter extends Activity {
         filter.setReplacement(((TextView) findViewById(R.id.editTextReplacement)).getText().toString());
         filter.setSourceNumber(((TextView) findViewById(R.id.editTextSourceNumber)).getText().toString());
 
+        // set filterset for new filter, if set
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            int filtersetId = extras.getInt("filterset", -1);
+
+            if (filtersetId != -1) filter.setFiltersetId(filtersetId);
+        }
+
         if (filterId > -1) {
             configDatabase.updateFilter(filterId, filter);
         } else {

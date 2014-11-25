@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="create_table_filtersets">
-        create table filtersets (
+    <string name="create_table_filterset">
+        create table filterset (
         id integer primary key autoincrement,
         name varchar(32)
         );

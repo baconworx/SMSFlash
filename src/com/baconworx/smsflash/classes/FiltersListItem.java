@@ -1,6 +1,7 @@
 package com.baconworx.smsflash.classes;
 
 import com.baconworx.smsflash.db.Filter;
+import com.baconworx.smsflash.db.Filterset;
 
 public class FiltersListItem {
     private int id;
@@ -13,10 +14,17 @@ public class FiltersListItem {
         this.isGroup = isGroup;
         this.text = text;
     }
-    public static FiltersListItem fromFilter(int id, Filter filter) {
-        FiltersListItem item = new FiltersListItem(id, filter.getName(), filter.getFiltersetId() == null);
+
+    public static FiltersListItem fromFilter(Filter filter) {
+        FiltersListItem item = new FiltersListItem(filter.getId(), filter.getName(), false);
         return item;
     }
+
+    public static FiltersListItem fromFilterset(Filterset filter) {
+        FiltersListItem item = new FiltersListItem(filter.getId(), filter.getName(), true);
+        return item;
+    }
+
     public boolean isGroup() {
         return isGroup;
     }
