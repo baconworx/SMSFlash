@@ -28,12 +28,15 @@ public class Filters extends Activity {
     private ArrayList<Integer> selectedFiltersets = null;
 
     private ActionMode.Callback mActionModeCallback;
+
+    // adds filterset id to the extras of a given intent
     public static void SetFiltersetExtra(Intent intent, Bundle oldExtras) {
         if (oldExtras != null) {
             int filtersetId = oldExtras.getInt("filterset", -1);
             if (filtersetId != -1) intent.putExtra("filterset", filtersetId);
         }
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,12 +50,15 @@ public class Filters extends Activity {
 
         updateList();
 
+        // called on single click on the list, or after long-click returned false
         filtersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 FiltersListItem clickedItem = adapter.getItem(position);
 
                 if (selectedFilters != null) {
+                    // omfg selection mode!!! add clicked item to selection
+
                     clickedItem.setSelected();
 
                     if (clickedItem.isSelected()) {
@@ -69,11 +75,15 @@ public class Filters extends Activity {
                     refreshList();
                 } else {
                     if (clickedItem.isGroup()) {
+                        // open new Filters activity if Group, displaying the filters belonging to this filterset
+
                         Intent openFilterIntent = new Intent(Filters.this, Filters.class);
                         int filtersetId = clickedItem.getId();
                         openFilterIntent.putExtra("filterset", filtersetId);
                         startActivityForResult(openFilterIntent, FILTERS_ACTIVITY_REQUEST);
                     } else {
+                        // if not a filterset, spawns EditFilter activity
+
                         Intent editFilterIntent = new Intent(Filters.this, EditFilter.class);
                         int filterId = clickedItem.getId();
                         editFilterIntent.putExtra("filterId", filterId);
@@ -102,9 +112,12 @@ public class Filters extends Activity {
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.filters_context_delete:
+                        // trashbin clicked
+
                         ConfigDatabase configDatabase = new ConfigDatabase(Filters.this);
                         configDatabase.open();
 
+                        // remove all selected filters, then filtersets
                         for (int selectedFilterId : selectedFilters)
                             configDatabase.deleteFilter(selectedFilterId);
 
@@ -112,6 +125,8 @@ public class Filters extends Activity {
                             configDatabase.deleteFilterset(selectedFiltersetId);
 
                         configDatabase.close();
+
+                        // selection mode abolished
                         selectedFilters = null;
                         selectedFiltersets = null;
 
@@ -161,6 +176,8 @@ public class Filters extends Activity {
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // after returning from an activity, we update our List and update the triggers
+
         switch (requestCode) {
             case EDIT_FILTER_REQUEST:
             case EDIT_FILTERSET_REQUEST:
@@ -173,14 +190,17 @@ public class Filters extends Activity {
 
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    // tell the list to repopulate
     private void refreshList() {
         ListView filtersListView = (ListView) findViewById(R.id.filtersListView);
         ((FiltersListAdapter) filtersListView.getAdapter()).notifyDataSetChanged();
     }
+
+    // refetch from db
     private void updateList() {
         // clear list
         listItems.clear();
-
 
         ConfigDatabase configDatabase = new ConfigDatabase(this);
         configDatabase.open();
@@ -201,7 +221,7 @@ public class Filters extends Activity {
         if (filtersetId == null) {
             SparseArray<Filterset> filtersets = configDatabase.getFiltersets();
 
-            for (int i = 0; i < filtersets.size(); i++) {
+            for (int i = 0, filtersetsSize = filtersets.size(); i < filtersetsSize; i++) {
                 key = filtersets.keyAt(i);
                 filterset = filtersets.get(key);
                 listItems.add(FiltersListItem.fromFilterset(filterset));
@@ -211,12 +231,11 @@ public class Filters extends Activity {
         // and add the filters (setless or for selected set)
         SparseArray<Filter> filters = configDatabase.getFilters(filtersetId);
 
-        for (int i = 0; i < filters.size(); i++) {
+        for (int i = 0, filtersSize = filters.size(); i < filtersSize; i++) {
             key = filters.keyAt(i);
             filter = filters.get(key);
             listItems.add(FiltersListItem.fromFilter(filter));
         }
-
 
         configDatabase.close();
 
