@@ -59,7 +59,7 @@ public class EditFilter extends Activity {
         }
 
         if (filterId > -1) {
-            configDatabase.updateFilter(filterId, filter);
+            configDatabase.updateFilter(filter);
         } else {
             configDatabase.addFilter(filter);
         }

@@ -8,5 +8,7 @@
     <string name="title_activity_main_app">SMS Flash</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_filters">Filters</string>
+    <string name="action_new_filterset">Add Filterset</string>
+    <string name="action_edit_filterset">Edit Filterset</string>
 
 </resources>

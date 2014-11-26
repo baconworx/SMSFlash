@@ -20,12 +20,20 @@ import java.util.List;
 
 public class Filters extends Activity {
     private static final int EDIT_FILTER_REQUEST = 0;
+    private static final int EDIT_FILTERSET_REQUEST = 1;
+    private static final int FILTERS_ACTIVITY_REQUEST = 2;
+
     List<FiltersListItem> listItems = new ArrayList<FiltersListItem>();
     private ArrayList<Integer> selectedFilters = null;
     private ArrayList<Integer> selectedFiltersets = null;
 
     private ActionMode.Callback mActionModeCallback;
-
+    public static void SetFiltersetExtra(Intent intent, Bundle oldExtras) {
+        if (oldExtras != null) {
+            int filtersetId = oldExtras.getInt("filterset", -1);
+            if (filtersetId != -1) intent.putExtra("filterset", filtersetId);
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +72,7 @@ public class Filters extends Activity {
                         Intent openFilterIntent = new Intent(Filters.this, Filters.class);
                         int filtersetId = clickedItem.getId();
                         openFilterIntent.putExtra("filterset", filtersetId);
-                        startActivity(openFilterIntent);
+                        startActivityForResult(openFilterIntent, FILTERS_ACTIVITY_REQUEST);
                     } else {
                         Intent editFilterIntent = new Intent(Filters.this, EditFilter.class);
                         int filterId = clickedItem.getId();
@@ -147,29 +155,28 @@ public class Filters extends Activity {
             }
         });
     }
-
     private void clearSelection() {
         ListView filtersListView = (ListView) findViewById(R.id.filtersListView);
         ((FiltersListAdapter) filtersListView.getAdapter()).clearSelection();
     }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case EDIT_FILTER_REQUEST:
+            case EDIT_FILTERSET_REQUEST:
+            case FILTERS_ACTIVITY_REQUEST:
                 updateList();
                 MessageReceiver.SetTriggersFromDb(this);
+
                 break;
         }
 
         super.onActivityResult(requestCode, resultCode, data);
     }
-
     private void refreshList() {
         ListView filtersListView = (ListView) findViewById(R.id.filtersListView);
         ((FiltersListAdapter) filtersListView.getAdapter()).notifyDataSetChanged();
     }
-
     private void updateList() {
         // clear list
         listItems.clear();
@@ -215,32 +222,60 @@ public class Filters extends Activity {
 
         refreshList();
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.filters, menu);
+
+        // if we're in a filterset, hide the "add filterset"-option
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            Integer filtersetId = extras.getInt("filterset", -1);
+            if (filtersetId != -1) menu.findItem(R.id.action_new_filterset).setVisible(false);
+            else menu.findItem(R.id.action_edit_filterset).setVisible(false);
+
+            // also, add the filterset name
+            ConfigDatabase configDatabase = new ConfigDatabase(this);
+            configDatabase.open();
+
+            Filterset filterset = configDatabase.getFilterset(filtersetId);
+            configDatabase.close();
+
+            setTitle(filterset.getName());
+        } else {
+            menu.findItem(R.id.action_edit_filterset).setVisible(false);
+        }
+
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        Bundle extras = getIntent().getExtras();
+
+        Intent intent; // can be used by any option (start yourself!)
         switch (id) {
             case R.id.action_new_filter:
-                Intent openEditFilterIntent = new Intent(this, EditFilter.class);
+                intent = new Intent(this, EditFilter.class);
 
                 // set filterset for new filter, if set
-                Bundle extras = getIntent().getExtras();
-                if (extras != null) {
-                    int filtersetId = extras.getInt("filterset", -1);
+                SetFiltersetExtra(intent, extras);
 
-                    if (filtersetId != -1) openEditFilterIntent.putExtra("filterset", filtersetId);
-                }
+                startActivityForResult(intent, EDIT_FILTER_REQUEST);
+                break;
 
-                startActivityForResult(openEditFilterIntent, 0);
+            case R.id.action_new_filterset:
+            case R.id.action_edit_filterset:
+                intent = new Intent(this, EditFilterset.class);
+
+                // set filterset for new filter, if set
+                SetFiltersetExtra(intent, extras);
+
+                startActivityForResult(intent, EDIT_FILTERSET_REQUEST);
                 break;
         }
+
         return super.onOptionsItemSelected(item);
     }
 }

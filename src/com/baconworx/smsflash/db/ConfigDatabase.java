@@ -131,8 +131,8 @@ public class ConfigDatabase {
         return filter;
     }
 
-    public void updateFilter(int filterId, Filter filter) {
-        database.update("filter", filter.toContentValues(), "id = ?", new String[]{Integer.toString(filterId)});
+    public void updateFilter(Filter filter) {
+        database.update("filter", filter.toContentValues(), "id = ?", new String[]{filter.getId().toString()});
     }
     public void deleteFilter(int selectedFilterId) {
         database.delete("filter", "id = ?", new String[]{Integer.toString(selectedFilterId)});
@@ -147,5 +147,17 @@ public class ConfigDatabase {
             // delete filterset
             database.delete("filterset", "id = ?", new String[]{selectedFiltersetId.toString()});
         }
+    }
+    public Filterset getFilterset(int filtersetId) {
+        Cursor cursor;
+        cursor = database.query("filterset", null, "id = ?", new String[]{Integer.toString(filtersetId)}, null, null, null);
+
+        Filterset filterset = null;
+        if (cursor.moveToNext()) filterset = Filterset.fromCursor(cursor);
+
+        return filterset;
+    }
+    public void updateFilterset(Filterset filterset) {
+        database.update("filterset", filterset.toContentValues(), "id = ?", new String[]{filterset.getId().toString()});
     }
 }

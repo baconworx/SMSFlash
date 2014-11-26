@@ -15,7 +15,7 @@ public class Filter {
     private static final int COL_SOURCENO = 6;
     private static final int COL_TIMEOUT = 7;
     private static final int COL_FILTERSET = 8;
-    private int id;
+    private Integer id;
     private String name;
     private String caption;
     private String pattern;
@@ -42,7 +42,7 @@ public class Filter {
         return filter;
     }
 
-    public int getId() { return id; }
+    public Integer getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
