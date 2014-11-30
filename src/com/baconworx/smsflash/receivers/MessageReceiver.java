@@ -21,6 +21,7 @@ import java.util.List;
 public class MessageReceiver extends BroadcastReceiver {
     private static List<Trigger> triggers = new ArrayList<Trigger>();
 
+
     public MessageReceiver() {
         super();
     }
@@ -29,7 +30,7 @@ public class MessageReceiver extends BroadcastReceiver {
         ConfigDatabase configDatabase = new ConfigDatabase(context);
         configDatabase.open();
 
-        SparseArray<Filter> filters = configDatabase.getFilters();
+        SparseArray<Filter> filters = configDatabase.getFiltersFlat();
         List<Trigger> triggers = new ArrayList<Trigger>();
 
         for (int i = 0; i < filters.size(); i++) {
@@ -53,13 +54,12 @@ public class MessageReceiver extends BroadcastReceiver {
             Object[] pdus = (Object[]) bundle.get("pdus");
             String messageBody;
 
-            for (int i = 0, pdusLength = pdus.length; i < pdusLength; i++) {
-                byte[] pdu = (byte[]) pdus[i];
+            for (Object pdu : pdus) {
                 try {
-                    msg = SmsMessage.createFromPdu(pdu);
+                    msg = SmsMessage.createFromPdu((byte[]) pdu);
                     msgBuilder.append(msg.getDisplayMessageBody());
-                } catch (Exception ex) {
-                    // msg unparsable, skip
+                } catch (Exception ignored) {
+                    // msg unparsable
                 }
             }
 

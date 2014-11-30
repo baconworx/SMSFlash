@@ -54,6 +54,17 @@ public class ConfigDatabase {
                     new String[]{filterset.toString()}, null, null, null);
         }
 
+        return getFiltersFromCursor(cursor);
+    }
+
+    public SparseArray<Filter> getFiltersFlat() {
+        Cursor cursor;
+
+        cursor = database.query("filter", null, null, null, null, null, null);
+        return getFiltersFromCursor(cursor);
+    }
+
+    private SparseArray<Filter> getFiltersFromCursor(Cursor cursor) {
         SparseArray<Filter> filters = new SparseArray<Filter>();
         Filter current;
         while (cursor.moveToNext()) {

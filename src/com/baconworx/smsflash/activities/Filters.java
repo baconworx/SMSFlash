@@ -38,6 +38,12 @@ public class Filters extends Activity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        updateList();
+    }
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 

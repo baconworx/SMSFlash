@@ -10,6 +10,7 @@
 
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
             android:allowBackup="true"
@@ -22,15 +23,6 @@
                 android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
         </activity>
 
-        <receiver
-                android:name="com.baconworx.smsflash.receivers.MessageReceiver"
-                android:enabled="true"
-                android:exported="true">
-            <intent-filter android:priority="999">
-                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
-            </intent-filter>
-        </receiver>
-
         <activity
                 android:name="com.baconworx.smsflash.activities.MainApp"
                 android:label="@string/title_activity_main_app">
@@ -40,20 +32,55 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity
-                android:name="com.baconworx.smsflash.activities.SettingsActivity"
-                android:label="@string/title_activity_settings"
-                android:parentActivityName="com.baconworx.smsflash.activities.MainApp">
-            <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="com.baconworx.smsflash.MainApp"/>
-        </activity>
+
         <activity
                 android:name="com.baconworx.smsflash.activities.Filters"
                 android:label="@string/title_activity_filters">
         </activity>
         <activity android:name="com.baconworx.smsflash.activities.EditFilter" android:label="Edit Filter"/>
         <activity android:name=".activities.EditFilterset" android:label="Filterset"/>
+
+        <activity android:name="com.baconworx.smsflash.activities.ImportPackage" android:label="Import"
+                  android:taskAffinity="com.baconworx.smsflash.affinities.importPackages">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:host="*"/>
+                <data android:scheme="file"/>
+                <data android:pathPattern=".*\\.sfp"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="*"/>
+                <data android:scheme="http"/>
+                <data android:pathPattern=".*\\.sfp"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="*"/>
+                <data android:scheme="http"/>
+                <data android:mimeType="text/sfp"/>
+            </intent-filter>
+        </activity>
+
+        <service android:name=".services.ReceiverService"
+                 android:enabled="true"
+                 android:exported="false"
+                 android:stopWithTask="false"/>
+        <receiver
+                android:enabled="true"
+                android:name=".receivers.BootUpReceiver"
+                android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
