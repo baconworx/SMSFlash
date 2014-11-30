@@ -3,17 +3,22 @@ package com.baconworx.smsflash.settings;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.text.InputFilter;
+import android.text.Spanned;
 import com.baconworx.smsflash.R;
 import com.baconworx.smsflash.activities.Filters;
 import com.baconworx.smsflash.activities.ImportPackage;
 import com.baconworx.smsflash.db.ConfigDatabase;
-import com.baconworx.smsflash.receivers.MessageReceiver;
 
 public class MainSettings extends PreferenceFragment {
+    public static final String PREFS_NAME = "com.baconworx.smsflash.prefs";
     private static final int IMPORT_REQUEST = 1;
+    public static int DEFAULT_TIMEOUT = 5000;
     private Context context = null;
     @Override
     public void onAttach(Activity activity) {
@@ -61,7 +66,47 @@ public class MainSettings extends PreferenceFragment {
             }
         });
 
-        MessageReceiver.SetTriggersFromDb(context);
+        preference = this.findPreference("pref_timeout");
+        preference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+
+                SharedPreferences settings = getActivity().getSharedPreferences(PREFS_NAME, 0);
+                SharedPreferences.Editor editor = settings.edit();
+
+                editor.putInt("timeout", Integer.parseInt((String) newValue));
+                editor.commit();
+
+                return true;
+            }
+        });
+
+        // only allow timeout values from 1 to 99 seconds
+        ((EditTextPreference) preference).getEditText().setFilters(new InputFilter[]{
+                new InputFilter() {
+                    private static final int min = 1, max = 99;
+
+                    @Override
+                    public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                        try {
+                            int input = Integer.parseInt(dest.toString() + source.toString());
+                            if (isInRange(min, max, input))
+                                return null;
+                        } catch (NumberFormatException ignored) {
+                        }
+
+                        return "";
+                    }
+
+                    private boolean isInRange(int a, int b, int c) {
+                        return b > a ? c >= a && c <= b : c >= b && c <= a;
+                    }
+                }
+        });
+
+        SharedPreferences settings = context.getSharedPreferences(MainSettings.PREFS_NAME, 0);
+        int timeout = settings.getInt("timeout", DEFAULT_TIMEOUT);
+        preference.setDefaultValue(timeout);
     }
 
     @Override

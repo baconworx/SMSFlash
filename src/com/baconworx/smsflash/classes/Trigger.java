@@ -11,7 +11,6 @@ public class Trigger {
     private int backgroundColor;
     private String caption;
     private String sourceNumber;
-    private int timeout;
     private boolean caseSensitive = false;
 
     public Trigger() { }
@@ -25,7 +24,6 @@ public class Trigger {
         this.caption = caption;
         this.backgroundColor = backgroundColor;
         this.sourceNumber = sourceNumber;
-        this.timeout = 0;
     }
     public void setCaseSensitive(boolean caseSensitive) { this.caseSensitive = caseSensitive; }
     public String getRegex() {
@@ -55,10 +53,6 @@ public class Trigger {
     public void setCaption(String caption) {
         this.caption = caption;
     }
-    public int getTimeout() {
-        return timeout;
-    }
-    public void setTimeout(int timeout) { this.timeout = timeout; }
     public String getSourceNumber() {
         return sourceNumber;
     }
@@ -71,7 +65,7 @@ public class Trigger {
         Matcher matcher = pattern.matcher(message);
         if (matcher.find() && (this.sourceNumber == null || PhoneNumberUtils.compare(this.sourceNumber, sourceNumber))) {
             String displayText = matcher.replaceAll(replacement);
-            displayMessageData = new DisplayMessageData(caption, backgroundColor, displayText, timeout);
+            displayMessageData = new DisplayMessageData(caption, backgroundColor, displayText);
         }
         return displayMessageData;
     }

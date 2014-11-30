@@ -13,8 +13,7 @@ public class Filter {
     private static final int COL_REPLACEMENT = 4;
     private static final int COL_COLOR = 5;
     private static final int COL_SOURCENO = 6;
-    private static final int COL_TIMEOUT = 7;
-    private static final int COL_FILTERSET = 8;
+    private static final int COL_FILTERSET = 7;
     private Integer id;
     private String name;
     private String caption;
@@ -22,7 +21,6 @@ public class Filter {
     private String replacement;
     private int color;
     private String sourceNumber;
-    private int timeout;
     private Integer filtersetId;
 
     public static Filter fromCursor(Cursor cursor) {
@@ -34,7 +32,6 @@ public class Filter {
         filter.replacement = cursor.getString(COL_REPLACEMENT);
         filter.color = cursor.getInt(COL_COLOR);
         filter.sourceNumber = cursor.getString(COL_SOURCENO);
-        filter.timeout = cursor.getInt(COL_TIMEOUT);
 
         filter.filtersetId = cursor.getInt(COL_FILTERSET);
         filter.filtersetId = (filter.filtersetId == 0 ? null : filter.filtersetId);
@@ -56,8 +53,6 @@ public class Filter {
     public void setColor(int color) { this.color = color; }
     public String getSourceNumber() { return sourceNumber; }
     public void setSourceNumber(String sourceNumber) { this.sourceNumber = TextUtils.isEmpty(sourceNumber) ? null : sourceNumber; }
-    public int getTimeout() { return timeout; }
-    public void setTimeout(int timeout) { this.timeout = timeout; }
     public Integer getFiltersetId() { return filtersetId; }
     public void setFiltersetId(Integer filtersetId) { this.filtersetId = filtersetId; }
     public ContentValues toContentValues() {
@@ -69,15 +64,12 @@ public class Filter {
         contentValues.put("replacement", replacement);
         contentValues.put("color", color);
         contentValues.put("sourceNumber", sourceNumber);
-        contentValues.put("timeout", timeout);
         contentValues.put("filterset", filtersetId);
 
         return contentValues;
     }
 
     public Trigger makeTrigger() {
-        Trigger trigger = new Trigger(pattern, replacement, caption, color, sourceNumber);
-        trigger.setTimeout(timeout);
-        return trigger;
+        return new Trigger(pattern, replacement, caption, color, sourceNumber);
     }
 }

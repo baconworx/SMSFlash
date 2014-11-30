@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -35,18 +34,16 @@ public class FlashDisplay extends Activity {
             captionTextView.setText((String) extras.get("caption"));
             contentTextView.setText((String) extras.get("text"));
 
-            backgroundLayout.setBackgroundColor(extras
-                    .getInt("backgroundColor"));
+            backgroundLayout.setBackgroundColor(extras.getInt("backgroundColor"));
             backgroundLayout.setAlpha(1);
-            backgroundLayout.setOnClickListener(new OnClickListener() {
-
+            backgroundLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     new Fader(0, 500).start();
                 }
             });
 
-            new Fader(extras.getInt("timeout"), 100).start();
+            new Fader(extras.getInt("timeout"), 1000).start();
         }
     }
 

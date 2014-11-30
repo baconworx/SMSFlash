@@ -15,7 +15,6 @@
         replacement varchar(256) not null,
         color integer not null,
         sourceNumber varchar(64),
-        timeout integer not null,
         filterset integer references filtersets
         );
     </string>

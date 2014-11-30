@@ -110,7 +110,6 @@ public class ImportPackage extends Activity {
                     filter.setReplacement(values[COL_REPLACEMENT]);
                     filter.setSourceNumber(values[COL_SOURCENO]);
                     filter.setColor(getColorFromString(values[COL_COLOR]));
-                    filter.setTimeout(5000); // to be removed
 
                     if (currentFilterset != null) {
                         List<Filter> filters = map.get(currentFilterset);

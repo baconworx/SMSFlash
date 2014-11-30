@@ -1,9 +1,6 @@
 package com.baconworx.smsflash.receivers;
 
-import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
+import android.content.*;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +11,7 @@ import com.baconworx.smsflash.classes.DisplayMessageData;
 import com.baconworx.smsflash.classes.Trigger;
 import com.baconworx.smsflash.db.ConfigDatabase;
 import com.baconworx.smsflash.db.Filter;
+import com.baconworx.smsflash.settings.MainSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +38,7 @@ public class MessageReceiver extends BroadcastReceiver {
 
         configDatabase.close();
     }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle bundle = intent.getExtras();
@@ -89,16 +88,15 @@ public class MessageReceiver extends BroadcastReceiver {
             }
 
             if (displayMessageData != null) {
-                displayMessageIntent.putExtra("caption",
-                        displayMessageData.getCaption());
-                displayMessageIntent.putExtra("text",
-                        displayMessageData.getDisplayText());
-                displayMessageIntent.putExtra("backgroundColor",
-                        displayMessageData.getBackgroundColor());
-                displayMessageIntent.putExtra("timeout",
-                        displayMessageData.getTimeout());
-                displayMessageIntent.putExtra("threadId",
-                        threadId);
+                displayMessageIntent.putExtra("caption", displayMessageData.getCaption());
+                displayMessageIntent.putExtra("text", displayMessageData.getDisplayText());
+                displayMessageIntent.putExtra("backgroundColor", displayMessageData.getBackgroundColor());
+
+                SharedPreferences settings = context.getSharedPreferences(MainSettings.PREFS_NAME, 0);
+                int timeout = settings.getInt("timeout", MainSettings.DEFAULT_TIMEOUT) * 1000;
+                displayMessageIntent.putExtra("timeout", timeout);
+
+                displayMessageIntent.putExtra("threadId", threadId);
                 context.startActivity(displayMessageIntent);
             }
         }

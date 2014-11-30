@@ -5,6 +5,12 @@
     <PreferenceCategory
             android:title="Settings">
 
+        <EditTextPreference
+                android:defaultValue="8"
+                android:dialogTitle="Display Timeout in seconds"
+                android:inputType="number"
+                android:key="pref_timeout"
+                android:title="Timeout"/>
 
     </PreferenceCategory>
 

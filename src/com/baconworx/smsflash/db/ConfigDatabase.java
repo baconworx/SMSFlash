@@ -105,7 +105,6 @@ public class ConfigDatabase {
         filterErste.setReplacement("$1");
         filterErste.setName("Erste Bank");
         filterErste.setColor(Color.CYAN);
-        filterErste.setTimeout(5000);
 
         Filter filterRaika;
 
@@ -115,7 +114,6 @@ public class ConfigDatabase {
         filterRaika.setReplacement("$1");
         filterRaika.setName("Raika");
         filterRaika.setColor(Color.CYAN);
-        filterRaika.setTimeout(5000);
 
         Filterset filterset = new Filterset("Banken");
         addFilterset(filterset);

@@ -10,7 +10,6 @@ import com.baconworx.smsflash.db.Filter;
 
 public class EditFilter extends Activity {
     private final int DEFAULT_COLOR = Color.RED;
-    private final int DEFAULT_TIMEOUT = 5000;
     Filter filter;
     private ConfigDatabase configDatabase;
     private int filterId;
@@ -38,7 +37,6 @@ public class EditFilter extends Activity {
         } else {
             filter = new Filter();
             filter.setColor(DEFAULT_COLOR);
-            filter.setTimeout(DEFAULT_TIMEOUT);
         }
     }
 
